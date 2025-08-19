@@ -10,19 +10,23 @@ const JWT_SECRET = process.env.JWT_SECRET
 const authenticateToken = async (req, res, next) => {
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
+    console.log(token)
     if (!token){
         return res.status(401).json({ error: 'Token de acesso requerido' })
     }
 
     try {
+        console.log('authenticate')
         const decoded = jwt.verify(token, JWT_SECRET)
-        const user = await getUser(decoded.userId)
+        console.log(decoded)
+        const user = await getUser(decoded.username)
         if (!user){
             return res.status(401).json({error: 'Usuário não encontrado'})
         }
         req.user = user
         next()
     } catch (error){
+        
         return res.status(403).json({error: 'Token inválido'})
     }
 }
@@ -76,7 +80,8 @@ router.post('/register', express.json(), async (req, res) => {
 })
 
 router.get('/verify-token', authenticateToken, (req, res) => {
-    res.status(200)
+    console.log('token válido')
+    res.status(200).json({msg: 'achei irado'})
 })
 
 router.get('/refresh-token', authenticateToken, (req, res) => {

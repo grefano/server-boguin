@@ -1,14 +1,15 @@
 const express = require('express')
 const router = express.Router()
+const { getChannelVideos, getVideos, deleteVideo, addVideo } = require('../database/queries')
 const limit_size = 200 // mb
-const cloudinary = require('cloudinary').v2
 const multer = require('multer')
+const cloudinary = require('cloudinary').v2
+
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: limit_size * 1024 * 1024 } // 100 MB limit
 })
 
-const { addVideo } = require('../database/queries')
 
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
@@ -16,8 +17,56 @@ cloudinary.config({
     api_secret: process.env.CLOUD_API_SECRET
 })
 
+router.get('/feed', async (req, res) => {
+    console.log('feed')
+    try {
+        const videos = await getVideos()
+        res.status(200).json(videos)
+    } catch (error){
+        console.error('erro ao buscar videos do feed', error)
+        res.status(500).json({ error: 'erro ao buscar vídeos'})
+    }    
+})    
 
-router.post('/upload-videos', upload.fields([
+router.get('/users/:userId', async (req, res) => {
+    console.log('my-videos')
+    
+})    
+
+
+
+router.delete('/:id', async (req, res) => {
+    try {
+        console.log('delete')
+        const { id } = req.params
+        const video = await getVideo(id)
+        if (!video) {
+            return res.status(404).json({ error: 'Video not found' })
+        }    
+        await cloudinary.uploader.destroy(id, { resource_type: 'video', invalidate: true }, function(error, result) {
+            if (error) {
+                return res.status(500).json({ error: 'Error deleting video from Cloudinary' })
+            }    
+        })    
+        await cloudinary.uploader.destroy(video.id_thumb, { resource_type: 'image', invalidate: true }, function(error, result) {
+            if (error) {
+                return res.status(500).json({ error: 'Error deleting thumbnail from Cloudinary' })
+            }    
+        })    
+        
+        await deleteVideo(id)
+
+        res.status(200).json({ message: 'Video and thumbnail deleted successfully' })
+    } catch (error) {
+        console.error('Error deleting video:', error)
+        res.status(500).json({ error: 'erro no server ao excluir video' })
+    }    
+})    
+
+
+
+
+router.post('/', upload.fields([
     { name: 'video', maxCount: 1 },
     { name: 'thumbnail', maxCount: 1 }
 ]), async(req, res) => {
@@ -73,5 +122,6 @@ router.post('/upload-videos', upload.fields([
         console.error('erro no upload do video: ', error)
     }
 })
+
 
 module.exports = router

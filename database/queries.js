@@ -49,6 +49,7 @@ async function deleteVideo(_id) {
 }
 
 async function getUser(_username) {
+    console.log(`get user ${_username}`)
     const [rows] = await pool.query(`
     select * from usuario where username = ?`,
     [_username])
