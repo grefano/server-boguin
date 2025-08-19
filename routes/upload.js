@@ -1,9 +1,12 @@
 const express = require('express')
 const router = express.Router()
-
+const limit_size = 200 // mb
 const cloudinary = require('cloudinary').v2
 const multer = require('multer')
-const upload = multer({ storage: multer.memoryStorage()})
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: limit_size * 1024 * 1024 } // 100 MB limit
+})
 
 const { addVideo } = require('../database/queries')
 
@@ -40,13 +43,19 @@ router.post('/upload-videos', upload.fields([
         thumb_name = thumb_name[thumb_name.length-1] 
 
         // upload video file
-        const videoResult = await cloudinary.uploader.upload(
+        const videoResult = await cloudinary.uploader.upload_large(
             `data:${videoFile.mimetype};base64,${videoFile.buffer.toString('base64')}`,
-            { resource_type: 'video', folder: 'videos' }
+            { resource_type: 'video', folder: 'videos' },
+            function(error, result) {
+                if (error) {
+                    console.log('cloudinary error')
+                    console.log(result, error)
+                }
+            }
         )
         videoUrl = videoResult.secure_url;
         console.log('Video uploaded:', videoUrl)
-        
+    
         // query database
         let video_name = videoResult.public_id.split('/')
         video_name = video_name[video_name.length-1] 
@@ -54,8 +63,14 @@ router.post('/upload-videos', upload.fields([
         res.status(201).json({ message: 'video enviado com sucesso', video: newVideo})
     
     } catch (error) {
+        if (error.http_code == 413) {
+            res.status(413).json({error: `arquivo muito grande. Tamanho máximo: ${limit_size}MB`})
+
+        } else {
+            res.status(500).json({error: 'erro ao processar upload do vídeo'})
+
+        }
         console.error('erro no upload do video: ', error)
-        res.status(500).json({error: 'erro ao processar upload do vídeo'})
     }
 })
 
