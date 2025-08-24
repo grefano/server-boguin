@@ -14,7 +14,6 @@ require('dotenv').config()
 
 const { createClient } = require('@supabase/supabase-js')
 
-const express = require('express');
 const supabaseUrl = process.env.SUBABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
