@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { getChannelVideos, getVideos, deleteVideo, addVideo } = require('../database/queries')
+const { getChannelVideos, getVideos, deleteVideo, addVideo } = require('../database/queries/queries_videos')
 const limit_size = 200 // mb
 const multer = require('multer')
 const cloudinary = require('cloudinary').v2
@@ -30,7 +30,15 @@ router.get('/feed', async (req, res) => {
 
 router.get('/users/:userId', async (req, res) => {
     console.log('my-videos')
-    
+    try{
+        console.log(req.params)
+        const { userId } = req.params
+        const videos = await getChannelVideos(userId)
+        res.status(200).json(videos)
+    } catch (error){
+        console.error('erro ao buscar vídeos', error)
+        res.status(500).json({error:'erro ao buscar vídeos'})
+    }
 })    
 
 

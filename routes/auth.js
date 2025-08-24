@@ -3,7 +3,7 @@ const router = express.Router()
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
-const { getUser, addAccount } = require('../database/queries')
+const { getUser, addAccount } = require('../database/queries/queries_users')
 const JWT_SECRET = process.env.JWT_SECRET
 
 
