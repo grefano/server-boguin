@@ -17,7 +17,7 @@ async function getUser(_username) {
     console.log(`get user ${_username}`)
 
     const { data, error } = await supabase.from('usuario').select('*').eq('username', _username)
-    return error ? error : data 
+    return error ? error : data[0]
 }
 
 

@@ -11,7 +11,7 @@ const authRoute = require('./routes/auth')
 const usersRoute = require('./routes/users')
 
 app.use(cors({
-    origin: '*',
+    origin: 'https://boguin.vercel.app',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning']
 }))
