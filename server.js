@@ -11,7 +11,22 @@ const authRoute = require('./routes/auth')
 const usersRoute = require('./routes/users')
 
 app.use(cors({
-    origin: ['https://boguin.vercel.app', '*'],
+    origin: function (origin, callback) {
+        const allowedOrigins = [ 'https://boguin.vercel.app', 'https://optionally-allowed-polliwog.ngrok-free.app']
+        if (!origin){
+            return callback(null, true)
+        }
+        const isAllowed = allowedOrigins.some(allowedOrigin => {
+            return allowedOrigin == origin
+        })
+        if (isAllowed){
+            callback(null, true)
+        } else {
+            console.log(`cors bloqueou origin ${origin}`)
+            callback(new Error(`origem ${origin} não permitida pelo cors`))
+        }
+    },
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning']
 }))
