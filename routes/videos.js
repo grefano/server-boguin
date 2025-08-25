@@ -17,6 +17,18 @@ cloudinary.config({
     api_secret: process.env.CLOUD_API_SECRET
 })
 
+router.get('/:id', async (req, res) => {
+    console.log('get video')
+    const { id } = req.params
+    try {
+        const video = await getVideo(id)
+        res.status(200).json(video)
+    } catch (error) {
+        console.error(`erro ao buscar video ${id}`, error)
+        res.status(500).json({ error: 'erro ao buscar vídeos'})
+    }
+})
+
 router.get('/feed', async (req, res) => {
     console.log('feed')
     try {
