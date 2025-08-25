@@ -1,44 +1,31 @@
-const pool = require('../../db')
+const supabase = require('../../db')
 // channel_id, public_id, thumb_public_id, title
 async function getVideos() {
-    const [ rows ] = await pool.query("SELECT * FROM video")
-    console.log(rows)
-    
-    return rows
+    const { data, error } = await supabase.from('video').select('*')
+    return error ? error : data 
     
 }
 
-async function addVideo(id, thumb_id, channel_id, title) {
-    const [result] = await pool.query(`
-        insert into video (id, id_thumb, id_channel, title) values (?, ?, ?, ?)
-            `, [id, thumb_id, channel_id, title])   
-    return result
+async function addVideo(id, id_thumb, id_channel, title) {
+    const { data, error } = await supabase.from('video').insert([{ id, id_thumb, id_channel, title }])
+    return error ? error : data 
 }
 
 
 async function getVideo(_id) {
-    const [rows] = await pool.query(`
-    select * from video where id = ?`,
-    [_id]   
-    )
+    const { data, error } = await supabase.from('video').select('*').eq('id', _id)
+    return error ? error : data[0] 
 }
 
 async function getChannelVideos(_channel_id){
     console.log(`get videos from user ${_channel_id}`)
-
-    const [rows] = await pool.query(`
-    select * from video where id_channel = ?`,
-    [_channel_id]
-    )
-    console.log(rows)
-    return rows
+    const { data, error } = await supabase.from('video').select('*').eq('id_channel', _channel_id)
+    return error ? error : data
 }
 
 async function deleteVideo(_id) {
-    const [result] = await pool.query(`
-        delete from video where id = ?`,
-    [_id])
-    return result
+    const { data, error } = await supabase.from('video').delete().eq('id', _id)
+    return error ? error : data
 }
 
 
