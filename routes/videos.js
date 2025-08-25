@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { getChannelVideos, getVideos, deleteVideo, addVideo } = require('../database/queries/queries_videos')
+const { getChannelVideos, getVideos, getVideo, deleteVideo, addVideo } = require('../database/queries/queries_videos')
 const limit_size = 200 // mb
 const multer = require('multer')
 const cloudinary = require('cloudinary').v2
