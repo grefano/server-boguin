@@ -10,6 +10,7 @@ const videosRoute = require('./routes/videos')
 const authRoute = require('./routes/auth')
 const usersRoute = require('./routes/users')
 const cronRoute = require('./routes/cron')
+const subscriptionsRoute = require('./routes/subscriptions')
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -35,6 +36,7 @@ app.use(cors({
 app.use('/api/videos', videosRoute)
 app.use('/api/auth', authRoute)
 app.use('/api/users', usersRoute)
+app.use('/api/subscriptions', subscriptionsRoute)
 app.use('/keep-alive', cronRoute)
 
 
