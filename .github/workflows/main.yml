@@ -10,4 +10,11 @@ jobs:
     steps:
       - name: ping
         run: |
-          curl -f https://seu-servidor.onrender.com/keep-alive || exit 1
+          echo "Pinging server"
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://server-boguin.onrender.com/keep-alive)
+
+          if [ $response -eq 200 ]; then
+            echo "server is alive"
+          else
+            echo "server might be down $response"
+          fi
