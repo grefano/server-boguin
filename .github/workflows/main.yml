@@ -11,9 +11,9 @@ jobs:
       - name: ping
         run: |
           echo "Pinging server"
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://server-boguin.onrender.com/keep-alive)
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://server-bogui~sn.onrender.com/keep-alive)
 
-          if [ $response -eq 200 ] then
+          if [ $response -eq 200 ]; then
             echo "server is alive"
           else
             echo "server might be down $response"
