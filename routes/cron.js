@@ -2,8 +2,8 @@ const express = require('express')
 const router = express.Router()
 
 
-router.get('/keep-alive', async(req, res) => {
-    res.status(200).json({msg: 'recebido'})
+router.get('/', async(req, res) => {
+    res.status(200).json({msg: 'pong'})
 })
 
 module.exports = router
