@@ -10,6 +10,7 @@ router.get('/', async (req, res) => {
     console.log(req.query)
     const result = await getSubscription(owner_id, subject_id, type)
     console.log(`result ${result}`)
+    console.log(`result ${result[0]}`)
     if (result instanceof PostgrestError){
         console.log('erro get sub')
         console.log(`${owner_id} NÃO é inscrito de ${subject_id}`)
