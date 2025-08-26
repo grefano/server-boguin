@@ -6,11 +6,17 @@ const { PostgrestError } = require('@supabase/supabase-js')
 
 router.get('/', async (req, res) => {
     const {owner_id, subject_id, type} = req.query
+    if (!owner_id || !subject_id){
+        res.status(500).json({msg:'algum dos usuários não foi especificado'})
+    }
     console.log(`get sub`)
     console.log(req.query)
     const result = await getSubscription(owner_id, subject_id, type)
     console.log(`result ${result}`)
     console.log(`result ${result[0]}`)
+    console.log(`result ${JSON.stringify(result)}`)
+    console.log(`result ${JSON.stringify(result[0])}`)
+    
     if (result instanceof PostgrestError || result == undefined){
         console.log('erro get sub')
         console.log(`${owner_id} NÃO é inscrito de ${subject_id}`)
