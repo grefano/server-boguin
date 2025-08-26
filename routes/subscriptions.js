@@ -12,9 +12,11 @@ router.get('/', async (req, res) => {
     console.log(result)
     if (result instanceof PostgrestError){
         console.log('erro get sub')
+        console.log(`${owner_id} NÃO é inscrito de ${subject_id}`)
         res.status(500).json(result)
     } else {
         console.log('get sub deu certo')
+        console.log(`${owner_id} é inscrito de ${subject_id}`)
         res.status(200).json(result)
     }
     
