@@ -18,7 +18,7 @@ async function getVideo(_id) {
 }
 
 async function getChannelVideos(_channel_id){
-    console.log(`get videos from user ${_channel_id}`)
+    // console.log(`get videos from user ${_channel_id}`)
     const { data, error } = await supabase.from('video').select('*').eq('id_channel', _channel_id)
     return error ? error : data
 }

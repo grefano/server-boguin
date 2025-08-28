@@ -10,15 +10,15 @@ const JWT_SECRET = process.env.JWT_SECRET
 const authenticateToken = async (req, res, next) => {
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
-    console.log(token)
+    // console.log(token)
     if (!token){
         return res.status(401).json({ error: 'Token de acesso requerido' })
     }
 
     try {
-        console.log('authenticate')
+        // console.log('authenticate')
         const decoded = jwt.verify(token, JWT_SECRET)
-        console.log(decoded)
+        // console.log(decoded)
         const user = await getUser(decoded.username)
         if (!user){
             return res.status(401).json({error: 'Usuário não encontrado'})
@@ -39,12 +39,12 @@ router.post('/login', express.json(), async (req, res) => {
         const { username, password } = req.body
         const user = await getUser(username)
         if (!user) {
-            return res.status(401).json({ error: 'Invalid username'})
+            return res.status(401).json({ error: 'Usuário não existe'})
         }
         console.log(user)
         const isMatch = await bcrypt.compare(password, user.password_hash)
         if (!isMatch) {
-            return res.status(401).json({ error: 'Invalid password'})
+            return res.status(401).json({ error: 'Senha incorreta'})
 
         }   
 
@@ -80,7 +80,7 @@ router.post('/register', express.json(), async (req, res) => {
 })
 
 router.get('/verify-token', authenticateToken, (req, res) => {
-    console.log('token válido')
+    // console.log('token válido')
     res.status(200).json({msg: 'achei irado'})
 })
 

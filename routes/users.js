@@ -6,7 +6,7 @@ const { getUser, addAccount } = require('../database/queries/queries_users')
 
 router.get('/:userId', async (req, res) => {
     const { userId } = req.params
-    console.log(`get user ${userId}`)
+    // console.log(`get user ${userId}`)
     try{
         const user = await getUser(userId)
         if (user == undefined){

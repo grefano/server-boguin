@@ -88,7 +88,7 @@ router.get('/feed', async (req, res) => {
 })        
 
 router.get('/:id', async (req, res) => {
-    console.log('get video')
+    // console.log('get video')
     const { id } = req.params
     try {
         const video = await getVideo(id)
@@ -101,9 +101,8 @@ router.get('/:id', async (req, res) => {
 
 
 router.get('/users/:userId', async (req, res) => {
-    console.log('my-videos')
+    // console.log('my-videos')
     try{
-        console.log(req.params)
         const { userId } = req.params
         const videos = await getChannelVideos(userId)
         res.status(200).json(videos)
