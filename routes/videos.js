@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { getChannelVideos, getVideos, getVideo, deleteVideo, addVideo } = require('../database/queries/queries_videos')
+const { getChannelVideos, getVideos, getVideo, deleteVideo, addVideo, getVideosSubscriptions } = require('../database/queries/queries_videos')
 const limit_size = 200 // mb
 const multer = require('multer')
 const cloudinary = require('cloudinary').v2
@@ -74,6 +74,20 @@ router.post('/', upload.fields([
     }
 })
 
+
+router.get('/feed/subscriptions/:id', async (req, res) => {
+    console.log('feed subs')
+    console.log(req.params)
+    const { id } = req.params
+    try {
+        const videos = await getVideosSubscriptions(id)
+        console.log(videos)
+        res.status(200).json(videos)
+    } catch (error){
+        console.error('erro ao buscar videos do feed de inscrições', error)
+        res.status(500).json({ error: 'erro ao buscar vídeos'})
+    }        
+})        
 
 
 router.get('/feed', async (req, res) => {

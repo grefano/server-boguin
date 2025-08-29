@@ -6,6 +6,17 @@ async function getVideos() {
     
 }
 
+async function getVideosSubscriptions(id) {
+    console.log('videos sub')
+    // pegar lista de inscrições do usuário
+    // const { data: dataSubs, error: errorSubs } = await supabase.from('subscriptions').select('*').eq('owner_id', id)
+    const {data, error} = await supabase.from('video').select('*').in('id_channel', 
+        await supabase.from('subscriptions').select('subject_id').eq('owner_id', id).then(({data}) => data?.map(s => s.subject_id) || [])
+    )
+    
+    return data
+}
+
 async function addVideo(id, id_thumb, id_channel, title) {
     const { data, error } = await supabase.from('video').insert([{ id, id_thumb, id_channel, title }])
     return error ? error : data 
@@ -31,5 +42,5 @@ async function deleteVideo(_id) {
 
 
 module.exports = {
-    getVideo, getVideos, addVideo, getChannelVideos, deleteVideo
+    getVideo, getVideos, addVideo, getChannelVideos, deleteVideo, getVideosSubscriptions
 }
