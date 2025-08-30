@@ -17,14 +17,18 @@ app.use(cors({
     origin: function (origin, callback) {
         const allowedOrigins = [ 'https://boguin.vercel.app', 'https://optionally-allowed-polliwog.ngrok-free.app']
         if (!origin){
+            console.log('!origin')
             return callback(null, true)
         }
         const isAllowed = allowedOrigins.some(allowedOrigin => {
             return allowedOrigin == origin
         })
         if (isAllowed){
+            console.log('is allowed')
             callback(null, true)
         } else {
+            console.log('isnt allowed')
+
             console.log(`cors bloqueou origin ${origin}`)
             callback(new Error(`origem ${origin} não permitida pelo cors`))
         }
