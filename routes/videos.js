@@ -4,6 +4,7 @@ const { getChannelVideos, getVideos, getVideo, deleteVideo, addVideo, getVideosS
 const limit_size = 200 // mb
 const multer = require('multer')
 const cloudinary = require('cloudinary').v2
+const { authenticateToken } = require('../middlewares/authenticateToken')
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -20,17 +21,21 @@ cloudinary.config({
 router.post('/', upload.fields([
     { name: 'video', maxCount: 1 },
     { name: 'thumbnail', maxCount: 1 }
-]), async(req, res) => {
+]), authenticateToken,  async(req, res) => {
+    console.log('upload video')
+    console.log(req.body)
+    console.log(req.files)
     try {
         if (!req.files || !req.files.video || !req.files.thumbnail) {
             return res.status(400).json({error: 'Video and thumbnail files are required'})
         }
         const videoFile = req.files.video[0]
         const thumbFile = req.files.thumbnail[0]
-        const { title, desc, userId } = req.body
+        const { title, desc } = req.body
 
         let videoUrl, thumbUrl
         
+        console.log('wow')
         // upload thumbnail file
         const thumbResult = await cloudinary.uploader.upload(
             `data:${thumbFile.mimetype};base64,${thumbFile.buffer.toString('base64')}`,
@@ -59,7 +64,7 @@ router.post('/', upload.fields([
         // query database
         let video_name = videoResult.public_id.split('/')
         video_name = video_name[video_name.length-1] 
-        const newVideo = await addVideo(video_name, thumb_name, userId, title)
+        const newVideo = await addVideo(video_name, thumb_name, req.user, title)
         res.status(201).json({ message: 'video enviado com sucesso', video: newVideo})
     
     } catch (error) {
@@ -75,12 +80,10 @@ router.post('/', upload.fields([
 })
 
 
-router.get('/feed/subscriptions/:id', async (req, res) => {
+router.get('/feed/subscriptions', authenticateToken, async (req, res) => {
     console.log('feed subs')
-    console.log(req.params)
-    const { id } = req.params
     try {
-        const videos = await getVideosSubscriptions(id)
+        const videos = await getVideosSubscriptions(req.user)
         console.log(videos)
         res.status(200).json(videos)
     } catch (error){
@@ -128,7 +131,7 @@ router.get('/users/:userId', async (req, res) => {
 
 
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         console.log('delete')
         const { id } = req.params

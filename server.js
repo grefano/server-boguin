@@ -12,10 +12,11 @@ const usersRoute = require('./routes/users')
 const cronRoute = require('./routes/cron')
 const subscriptionsRoute = require('./routes/subscriptions')
 const commentsRoute = require('./routes/comments')
+const friendsRoute = require('./routes/friends')
 
 app.use(cors({
     origin: function (origin, callback) {
-        const allowedOrigins = [ 'https://boguin.vercel.app', 'https://optionally-allowed-polliwog.ngrok-free.app']
+        const allowedOrigins = [ 'https://boguin.vercel.app', 'https://optionally-allowed-polliwog.ngrok-free.app', 'http://localhost:5173']
         if (!origin){
             console.log('!origin')
             return callback(null, true)
@@ -43,6 +44,7 @@ app.use('/api/auth', authRoute)
 app.use('/api/users', usersRoute)
 app.use('/api/subscriptions', subscriptionsRoute)
 app.use('/api/comments', commentsRoute)
+app.use('/api/friends', friendsRoute)
 app.use('/keep-alive', cronRoute)
 
 

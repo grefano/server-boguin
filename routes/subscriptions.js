@@ -3,6 +3,7 @@ const router = express.Router()
 
 const { getSubscription, addSubscription, removeSubscription } = require('../database/queries/queries_subscriptions')
 const { PostgrestError } = require('@supabase/supabase-js')
+const { authenticateToken } = require('../middlewares/authenticateToken')
 
 router.get('/', async (req, res) => {
     const {owner_id, subject_id, type} = req.query
@@ -36,7 +37,7 @@ router.delete('/', async (req, res) => {
     }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
     const {owner_id, subject_id, type} = req.query
     console.log(`add sub`)
     console.log(req.query)

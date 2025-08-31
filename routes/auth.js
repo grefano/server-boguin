@@ -11,14 +11,14 @@ const { authenticateToken } = require('../middlewares/authenticateToken')
 router.post('/login', express.json(), async (req, res) => {
     
     try {
-        console.log('login')
-        console.log(req.body)
+        // console.log('login')
+        // console.log(req.body)
         const { username, password } = req.body
         const user = await getUser(username)
         if (!user) {
             return res.status(401).json({ error: 'Usuário não existe'})
         }
-        console.log(user)
+        // console.log(user)
         const isMatch = await bcrypt.compare(password, user.password_hash)
         if (!isMatch) {
             return res.status(401).json({ error: 'Senha incorreta'})
@@ -35,8 +35,8 @@ router.post('/login', express.json(), async (req, res) => {
 
 router.post('/register', express.json(), async (req, res) => {
     try {
-        console.log('register')
-        console.log(req.body)
+        // console.log('register')
+        // console.log(req.body)
         const { username, password } = req.body
         const user = await getUser(username)
         console.log(`user ${user}`)
@@ -47,9 +47,9 @@ router.post('/register', express.json(), async (req, res) => {
         console.log(hashedPassword)
         await addAccount(username, hashedPassword)
         const token = jwt.sign({ username: username }, JWT_SECRET, { expiresIn: '1h' })
-        console.log('registrasao deu certo')
+        // console.log('registrasao deu certo')
 
-        return res.status(200)
+        res.status(200).json({ token })
     } catch (error) {
         console.error('error during sign up:', error)
         res.status(500).json({ error: 'Internal server error' })
