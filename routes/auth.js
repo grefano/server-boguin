@@ -25,7 +25,7 @@ router.post('/login', express.json(), async (req, res) => {
 
         }   
 
-        const token = jwt.sign({ username: username }, JWT_SECRET, { expiresIn: '1h' })
+        const token = jwt.sign({ username: username }, JWT_SECRET, { expiresIn: '4h' })
         res.status(200).json({ token })
     } catch (error) {
         console.error('Error during login:', error)
@@ -46,7 +46,7 @@ router.post('/register', express.json(), async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 12)
         console.log(hashedPassword)
         await addAccount(username, hashedPassword)
-        const token = jwt.sign({ username: username }, JWT_SECRET, { expiresIn: '1h' })
+        const token = jwt.sign({ username: username }, JWT_SECRET, { expiresIn: '4h' })
         // console.log('registrasao deu certo')
 
         res.status(200).json({ token })
@@ -65,7 +65,7 @@ router.get('/refresh-token', authenticateToken, (req, res) => {
     const newToken = jwt.sign(
         {usernmae: req.user.username},
         JWT_SECRET,
-        { expiresIn: '1h'}
+        { expiresIn: '4h'}
     )
     res.json({ token: newToken })
 })
