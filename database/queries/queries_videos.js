@@ -40,7 +40,6 @@ async function deleteVideo(_id) {
 }
 
 
-
 module.exports = {
-    getVideo, getVideos, addVideo, getChannelVideos, deleteVideo, getVideosSubscriptions
+    getVideo, getVideos, getChannelVideos, getVideosSubscriptions, addVideo, deleteVideo
 }

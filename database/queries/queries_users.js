@@ -1,4 +1,5 @@
 const supabase = require('../../db')
+const { addComment } = require('./queries_comments')
 
 async function addAccount(_username, _password){
     try{
@@ -22,5 +23,5 @@ async function getUser(_username) {
 
 
 module.exports = {
-    getUser, addAccount
+    addAccount, getUser
 }
