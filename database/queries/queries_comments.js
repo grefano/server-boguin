@@ -27,7 +27,7 @@ async function getCommentById(uuid){
 
 async function getCommentsByVideo(id_video){
     console.log('get comments by video')
-    const {data, error} = await supabase.from('comments').select('*').eq('id_video', id_video)
+    const {data, error} = await supabase.from('comments').select('*').eq('id_video', id_video).order('created_at', {ascending: false})
     console.log(data)
     console.log(error)
     return error ? error : data

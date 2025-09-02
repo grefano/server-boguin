@@ -82,8 +82,9 @@ router.post('/', upload.fields([
 
 router.get('/feed/subscriptions', authenticateToken, async (req, res) => {
     console.log('feed subs')
+    const {page} = req.query
     try {
-        const videos = await getVideosSubscriptions(req.user)
+        const videos = await getVideosSubscriptions(req.user, page)
         console.log(videos)
         res.status(200).json(videos)
     } catch (error){
@@ -95,8 +96,9 @@ router.get('/feed/subscriptions', authenticateToken, async (req, res) => {
 
 router.get('/feed', async (req, res) => {
     console.log('feed')
+    const {page} = req.query
     try {
-        const videos = await getVideos()
+        const videos = await getVideos(page)
         res.status(200).json(videos)
     } catch (error){
         console.error('erro ao buscar videos do feed', error)
