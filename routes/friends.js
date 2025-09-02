@@ -37,7 +37,7 @@ router.post('/:id_sender/:id_receiver', authenticateToken, async (req, res) => {
             const opposite = await getFriendRowsBySenderAndReceiver(id_receiver, id_sender, 'pending')
             if (opposite.length > 0){
                 const resultacceptopposite = await acceptFriend(opposite[0].id_sender, opposite[0].id_receiver)
-                handleResponse(resultacceptopposite, 'pedido de amizade foi envido')
+                handleResponse(resultacceptopposite, 'pedido de amizade foi aceito')
             }
             const relations = await getFriendRowsByUsers(id_sender, id_receiver)
             console.log('relations', relations)
@@ -69,8 +69,10 @@ router.delete('/:other', authenticateToken, async (req, res) => {
     console.log('delete friends (delete)')
     const {other} = req.params
     console.log(`${req.params.id_sender}, ${req.user}`)
+    console.log(req.query)
+    const {status} = req.query
     // verificar se pessoa realmente mandou convite
-    const friends = await getFriendRowsByUser(req.user, {status:'accepted'})
+    const friends = await getFriendRowsByUser(req.user, {status})
     if (!friends){
         return res.status(500).json({ msg: 'usuario não tem amigow'})
     }
