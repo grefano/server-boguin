@@ -1,5 +1,5 @@
 const supabase = require('../../db')
-const pageSize = 12
+const pageSize = 5
 // channel_id, public_id, thumb_public_id, title
 async function getVideos(page) {
     const { data, error } = await supabase.from('video').select('*').order('created_at', {ascending: false}).range(page*pageSize, page*pageSize+pageSize-1) //
@@ -29,9 +29,9 @@ async function getVideo(_id) {
     return error ? error : data[0] 
 }
 
-async function getChannelVideos(_channel_id){
+async function getChannelVideos(_channel_id, page){
     // console.log(`get videos from user ${_channel_id}`)
-    const { data, error } = await supabase.from('video').select('*').eq('id_channel', _channel_id)
+    const { data, error } = await supabase.from('video').select('*').eq('id_channel', _channel_id).order('created_at', {ascending: false}).range(page*pageSize, page*pageSize+pageSize-1) //
     return error ? error : data
 }
 

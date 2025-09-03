@@ -123,7 +123,8 @@ router.get('/users/:userId', async (req, res) => {
     // console.log('my-videos')
     try{
         const { userId } = req.params
-        const videos = await getChannelVideos(userId)
+        const { page } = req.query
+        const videos = await getChannelVideos(userId, page)
         res.status(200).json(videos)
     } catch (error){
         console.error('erro ao buscar vídeos', error)
