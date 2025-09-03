@@ -5,6 +5,7 @@ const limit_size = 200 // mb
 const multer = require('multer')
 const cloudinary = require('cloudinary').v2
 const { authenticateToken } = require('../middlewares/authenticateToken')
+const { PostgrestError } = require('@supabase/supabase-js')
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -25,58 +26,77 @@ router.post('/', upload.fields([
     console.log('upload video')
     console.log(req.body)
     console.log(req.files)
-    try {
-        if (!req.files || !req.files.video || !req.files.thumbnail) {
-            return res.status(400).json({error: 'Video and thumbnail files are required'})
-        }
-        const videoFile = req.files.video[0]
-        const thumbFile = req.files.thumbnail[0]
-        const { title, desc } = req.body
 
-        let videoUrl, thumbUrl
-        
-        console.log('wow')
-        // upload thumbnail file
-        const thumbResult = await cloudinary.uploader.upload(
-            `data:${thumbFile.mimetype};base64,${thumbFile.buffer.toString('base64')}`,
-            { resource_type: 'image', folder: 'thumbnails' }
-        )
-        thumbUrl = thumbResult.secure_url;
-        console.log('Thumbnail uploaded:', thumbUrl)
-        
-        let thumb_name = thumbResult.public_id.split('/')
-        thumb_name = thumb_name[thumb_name.length-1] 
-
-        // upload video file
-        const videoResult = await cloudinary.uploader.upload_large(
-            `data:${videoFile.mimetype};base64,${videoFile.buffer.toString('base64')}`,
-            { resource_type: 'video', folder: 'videos' },
-            function(error, result) {
-                if (error) {
-                    console.log('cloudinary error')
-                    console.log(result, error)
-                }
-            }
-        )
-        videoUrl = videoResult.secure_url;
-        console.log('Video uploaded:', videoUrl)
-    
-        // query database
-        let video_name = videoResult.public_id.split('/')
-        video_name = video_name[video_name.length-1] 
-        const newVideo = await addVideo(video_name, thumb_name, req.user, title)
-        res.status(201).json({ message: 'video enviado com sucesso', video: newVideo})
-    
-    } catch (error) {
-        if (error.http_code == 413) {
-            res.status(413).json({error: `arquivo muito grande. Tamanho máximo: ${limit_size}MB`})
-
-        } else {
-            res.status(500).json({error: 'erro ao processar upload do vídeo'})
-
-        }
-        console.error('erro no upload do video: ', error)
+    if (!req.files || !req.files.video || !req.files.thumbnail) {
+        return res.status(400).json({error: 'Video and thumbnail files are required'})
     }
+    const videoFile = req.files.video[0]
+    const thumbFile = req.files.thumbnail[0]
+    const { title, desc } = req.body
+
+    let videoUrl, thumbUrl
+    
+    console.log('wow')
+    // upload thumbnail file
+    const thumbResult = await cloudinary.uploader.upload(
+        `data:${thumbFile.mimetype};base64,${thumbFile.buffer.toString('base64')}`,
+        { resource_type: 'image', folder: 'thumbnails' },
+        function(error, result){
+            if (error){
+                console.log('error uploading thumbnail', error)
+                return res.status(500).json({message: 'erro upload thumbnail'})
+
+            } else {
+                console.log('thumbnail uploaded', result)
+            }
+        }
+    )
+    
+    thumbUrl = thumbResult.secure_url;
+    console.log('Thumbnail uploaded:', thumbUrl)
+    
+    let thumb_name = thumbResult.public_id.split('/')
+    thumb_name = thumb_name[thumb_name.length-1] 
+
+    // upload video file
+    const videoResult = await cloudinary.uploader.upload_large(
+        `data:${videoFile.mimetype};base64,${videoFile.buffer.toString('base64')}`,
+        { resource_type: 'video', folder: 'videos' },
+        async function(error, result) {
+            if (error) {
+                console.log('cloudinary error')
+                console.log(result, error)
+
+                cloudinary.uploader.destroy(thumbResult.public_id, function(error, result){
+                    if (error){
+                        console.log('error deleting thumbnail', error)
+                    } else {
+                        console.log('thumbnail deleted', result)
+                    }
+                })
+                return res.status(500).json({message: 'erro upload video'})
+            }
+        }
+    )
+    
+    videoUrl = videoResult.secure_url;
+    console.log('Video uploaded:', videoUrl)
+
+    // query database
+    console.log('query database')
+    let video_name = videoResult.public_id.split('/')
+    video_name = video_name[video_name.length-1] 
+    const newVideo = await addVideo(video_name, thumb_name, req.user, title)
+    if (newVideo instanceof PostgrestError){
+        console.log('error querying video', newVideo)
+        cloudinary.uploader.destroy(thumbResult.public_id)
+        cloudinary.uploader.destroy(videoResult.public_id)
+        res.status(500).json({message: `error querying video ${newVideo}`})
+    } else {
+        res.status(201).json({ message: 'video enviado com sucesso', video: newVideo})
+    }
+
+   
 })
 
 
