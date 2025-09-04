@@ -12,40 +12,30 @@ async function addComment(id_user, id_video, text){
 async function getComments(id_user, id_video){
     console.log('get comment by user and video')
     const {data, error} = await supabase.from('comments').select('*').eq('id_user', id_user).eq('id_video', id_video)
-    console.log(data)
-    console.log(error)
     return error ? error : data
 }
 
 async function getCommentById(uuid){
     console.log('get comment by id')
     const {data, error} = await supabase.from('comments').select('*').eq('uuid', uuid)
-    console.log(data)
-    console.log(error)
     return error ? error : data
 }
 
 async function getCommentsByVideo(id_video){
     console.log('get comments by video')
     const {data, error} = await supabase.from('comments').select('*').eq('id_video', id_video).order('created_at', {ascending: false})
-    console.log(data)
-    console.log(error)
     return error ? error : data
 }
 
 async function deleteCommentById(uuid){
     console.log('delete comment by id')
     const {data, error} = await supabase.from('comments').delete().eq('uuid', uuid)
-    console.log(data)
-    console.log(error)
     return error ? error : data
 }
 
 async function deleteCommentByUserAndVideo(id_user, id_video){
     console.log('delete comment by id')
     const {data, error} = await supabase.from('comments').delete().eq('id_user', id_user).eq('id_video', id_video)
-    console.log(data)
-    console.log(error)
     return error ? error : data
 }
 

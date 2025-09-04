@@ -7,7 +7,6 @@ const { PostgrestError } = require('@supabase/supabase-js')
 router.get('/:id_video', express.json(), async (req, res) => {
     const { id_video } = req.params
     const comments = await getCommentsByVideo(id_video)
-    console.log(comments)
     
     if (comments instanceof PostgrestError){
         res.status(500).json({error: comments})
@@ -19,8 +18,6 @@ router.get('/:id_video', express.json(), async (req, res) => {
 
 router.post('/', authenticateToken, express.json(), async (req, res) => {
     const { id_video, text } = req.body
-    console.log('body', req.body)
-    console.log('user', req.user)
 
     const result = await addComment(req.user, id_video, text)
     if (result instanceof PostgrestError){

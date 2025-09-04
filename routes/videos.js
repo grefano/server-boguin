@@ -100,12 +100,22 @@ router.post('/', upload.fields([
 })
 
 
+router.get('/feed/recent', async (req, res) => {
+    const {page} = req.query
+    try {
+        const videos = await getVideos(page)
+        res.status(200).json(videos)
+    } catch (error){
+        console.error('erro ao buscar videos do feed de videos recentes', error)
+        res.status(500).json({ error: 'erro ao buscar vídeos'})
+    }
+})
+
 router.get('/feed/subscriptions', authenticateToken, async (req, res) => {
     console.log('feed subs')
     const {page} = req.query
     try {
         const videos = await getVideosSubscriptions(req.user, page)
-        console.log(videos)
         res.status(200).json(videos)
     } catch (error){
         console.error('erro ao buscar videos do feed de inscrições', error)
@@ -113,12 +123,42 @@ router.get('/feed/subscriptions', authenticateToken, async (req, res) => {
     }        
 })        
 
+const {getFriendRowsByUser} = require('../database/queries/queries_friends')
+const supabase = require('../db')
+const {differenceInMinutes} = require('date-fns')
 
 router.get('/feed', async (req, res) => {
     console.log('feed')
     const {page} = req.query
+    const user = 'grefano'
     try {
-        const videos = await getVideos(page)
+        // const videos = await getVideos(page)
+        const resultFriends = await getFriendRowsByUser(user, {})
+        console.log(`friends ${JSON.stringify(resultFriends)}`)
+        const friendsIds = resultFriends.map(friend => {
+            return friend.id_receiver == user ? friend.id_sender : friend.id_receiver
+        })
+        console.log(`\nfriends ids`, friendsIds)
+        const {data: excludedVideos} = await supabase.from('watchtime').select('id_video').eq('id_user', user)
+        const excludeIdVideos = excludedVideos?.map(item => item.id_video) || []
+        const {data: watchedVideosData, error: watchedVideosError} = await supabase.from('watchtime').select('id_user, time, created_at, video(*)').in('id_user', friendsIds).not('video.id', 'in', `(${excludeIdVideos.join(',')})`)
+        console.log(`\nvideos watched ${JSON.stringify(watchedVideosData)} error ${JSON.stringify(watchedVideosError)}`)
+
+        const videos = watchedVideosData.reduce((accumulator, current) => {
+            if (current.video == null) return accumulator;
+            console.log('atual', JSON.stringify(current))
+            const watched_by = current.id_user
+            const watched_time = current.time
+            const watched_date = current.created_at
+            const time_since_watched = differenceInMinutes(new Date(), new Date(watched_date))
+            const time_since_posted = differenceInMinutes(new Date(), new Date(current.video.created_at))
+            const score = watched_time*watched_time*100000/time_since_posted/time_since_watched
+            accumulator.push({...current.video, time_since_posted, watched_by, watched_time, time_since_watched, score})
+            return accumulator
+        }, [])
+        
+        console.log('\nfriends watched', JSON.stringify(videos))
+
         res.status(200).json(videos)
     } catch (error){
         console.error('erro ao buscar videos do feed', error)

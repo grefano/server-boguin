@@ -9,10 +9,11 @@ const cors = require('cors')
 const videosRoute = require('./routes/videos')
 const authRoute = require('./routes/auth')
 const usersRoute = require('./routes/users')
-const cronRoute = require('./routes/cron')
 const subscriptionsRoute = require('./routes/subscriptions')
 const commentsRoute = require('./routes/comments')
 const friendsRoute = require('./routes/friends')
+const dataRoute = require('./routes/data')
+const cronRoute = require('./routes/cron')
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -45,6 +46,7 @@ app.use('/api/users', usersRoute)
 app.use('/api/subscriptions', subscriptionsRoute)
 app.use('/api/comments', commentsRoute)
 app.use('/api/friends', friendsRoute)
+app.use('/api/data', dataRoute)
 app.use('/keep-alive', cronRoute)
 
 
