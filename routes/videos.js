@@ -26,16 +26,33 @@ router.post('/', upload.fields([
     console.log('upload video')
     console.log(req.body)
     console.log(req.files)
+    const { title, desc } = req.body
+    const tags = JSON.parse(req.body.tags)
+    console.log('tags', tags)
+    
+    // query database tags
+    const promises = tags.map(async (element) => {
+        return supabase.from('tags').upsert({id: element.pageid, name: element.title}).select()
+    });
+    Promise.all(promises)
+    
+    const promisesRelationship = tags.map(async (element) => {
+        if (element.parent){
+            return supabase.rpc('tags_relationship_upsert', {child_id: element.pageid, parent_id: element.parent})
+        }
+    })
+    Promise.all(promisesRelationship)
 
     if (!req.files || !req.files.video || !req.files.thumbnail) {
         return res.status(400).json({error: 'Video and thumbnail files are required'})
     }
     const videoFile = req.files.video[0]
     const thumbFile = req.files.thumbnail[0]
-    const { title, desc } = req.body
-
     let videoUrl, thumbUrl
     
+
+
+    return false
     console.log('wow')
     // upload thumbnail file
     const thumbResult = await cloudinary.uploader.upload(
@@ -82,7 +99,7 @@ router.post('/', upload.fields([
     videoUrl = videoResult.secure_url;
     console.log('Video uploaded:', videoUrl)
 
-    // query database
+    // query database video
     console.log('query database')
     let video_name = videoResult.public_id.split('/')
     video_name = video_name[video_name.length-1] 
@@ -95,6 +112,8 @@ router.post('/', upload.fields([
     } else {
         res.status(201).json({ message: 'video enviado com sucesso', video: newVideo})
     }
+
+    
 
    
 })
