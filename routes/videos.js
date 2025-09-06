@@ -30,31 +30,24 @@ router.post('/', upload.fields([
     const tags = JSON.parse(req.body.tags)
     console.log('tags', tags)
     
-    // query database tags
-    const promises = tags.map(async (element) => {
-        return supabase.from('tags').upsert({id: element.pageid, name: element.title}).select()
-    });
-    Promise.all(promises)
-    
-    const promisesRelationship = tags.map(async (element) => {
-        if (element.parent){
-            return supabase.rpc('tags_relationship_upsert', {child_id: element.pageid, parent_id: element.parent})
-        }
-    })
-    Promise.all(promisesRelationship)
+    const debug_nofiles = false
 
-    if (!req.files || !req.files.video || !req.files.thumbnail) {
+
+    if (!debug_nofiles && (!req.files || !req.files.video || !req.files.thumbnail)) {
         return res.status(400).json({error: 'Video and thumbnail files are required'})
     }
-    const videoFile = req.files.video[0]
-    const thumbFile = req.files.thumbnail[0]
-    let videoUrl, thumbUrl
+    
+    let videoFile, thumbFile, videoUrl, thumbUrl, thumbName, videoName
+    if (!debug_nofiles){
+        videoFile = req.files.video[0]
+        thumbFile = req.files.thumbnail[0]
+    }
     
 
 
-    return false
     console.log('wow')
     // upload thumbnail file
+    if (!debug_nofiles){
     const thumbResult = await cloudinary.uploader.upload(
         `data:${thumbFile.mimetype};base64,${thumbFile.buffer.toString('base64')}`,
         { resource_type: 'image', folder: 'thumbnails' },
@@ -72,10 +65,11 @@ router.post('/', upload.fields([
     thumbUrl = thumbResult.secure_url;
     console.log('Thumbnail uploaded:', thumbUrl)
     
-    let thumb_name = thumbResult.public_id.split('/')
-    thumb_name = thumb_name[thumb_name.length-1] 
-
+    thumbName = thumbResult.public_id.split('/')
+    thumbName = thumbName[thumbName.length-1] 
+    }
     // upload video file
+    if (!debug_nofiles){
     const videoResult = await cloudinary.uploader.upload_large(
         `data:${videoFile.mimetype};base64,${videoFile.buffer.toString('base64')}`,
         { resource_type: 'video', folder: 'videos' },
@@ -98,12 +92,12 @@ router.post('/', upload.fields([
     
     videoUrl = videoResult.secure_url;
     console.log('Video uploaded:', videoUrl)
-
+    
     // query database video
     console.log('query database')
-    let video_name = videoResult.public_id.split('/')
-    video_name = video_name[video_name.length-1] 
-    const newVideo = await addVideo(video_name, thumb_name, req.user, title)
+    videoName = videoResult.public_id.split('/')
+    videoName = videoName[videoName.length-1] 
+    const newVideo = await addVideo(videoName, thumbName, req.user, title)
     if (newVideo instanceof PostgrestError){
         console.log('error querying video', newVideo)
         cloudinary.uploader.destroy(thumbResult.public_id)
@@ -112,11 +106,45 @@ router.post('/', upload.fields([
     } else {
         res.status(201).json({ message: 'video enviado com sucesso', video: newVideo})
     }
+    }   
 
+    // // creating tags
+    // const promises = tags.map(async (element) => {
+    //     return supabase.from('tags').upsert({id: element.pageid, name: element.title}).select()
+    // });
+    // Promise.all(promises)
+    // // creating video tags
+    // // const promisedVideoTags = tags.map(async (element) => {
+    // //     return supabase.from('videos_tags').insert({id_video: video_name, id_tag: element.pageid})
+    // // })
+    // // Promise.all(promisedVideoTags)
+    // // creating tags relationship
+    // const promisesRelationship = tags.map(async (element) => {
+    //     if (element.parent){
+    //         return supabase.rpc('tags_relationship_upsert', {child_id: element.pageid, parent_id: element.parent})
+    //     }
+    // })
+    // Promise.all(promisesRelationship)
     
-
+    queryTags(tags, videoName)
    
 })
+const queryTags = async (tags, id_video) => {
+    for(var i = 0; i < tags.length; i++){
+        await supabase.from('tags').upsert({id: tags[i].pageid, name: tags[i].title})
+        // console.log('tag', tags[i].pageid)
+        await supabase.from('videos_tags').insert({id_video: id_video, id_tag: tags[i].pageid})
+        // console.log('videos_tags', tags[i].pageid)
+        // console.log('data, error', data, error)
+        if (tags[i].parent){
+            // console.log('tag relationship', tags[i].pageid, tags[i].parent)
+            await supabase.rpc('tags_relationship_upsert', {child_id: tags[i].pageid, parent_id: tags[i].parent})
+        }
+        if (tags[i].children){
+            queryTags(tags[i].children, id_video)
+        }
+    }
+}
 
 
 router.get('/feed/recent', async (req, res) => {
