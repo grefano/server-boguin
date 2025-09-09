@@ -39,6 +39,12 @@ async function deleteCommentByUserAndVideo(id_user, id_video){
     return error ? error : data
 }
 
+async function getVideoCommentsAmount(id_video){
+    const {data, error} = (await supabase.from('comments').select('id_user').eq('id_video', id_video))
+    
+    return error ? error : data.length
+}
+
 module.exports = {
-    addComment, getComments, getCommentById, getCommentsByVideo, deleteCommentById, deleteCommentByUserAndVideo
+    addComment, getComments, getCommentById, getCommentsByVideo, deleteCommentById, deleteCommentByUserAndVideo, getVideoCommentsAmount
 }

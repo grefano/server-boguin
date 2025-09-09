@@ -3,7 +3,7 @@ const supabase = require('../../db')
 
 
 // selecionar todos os requests em que um usuário está presente
-async function getFriendRowsByUser(user, params){
+async function getFriendRowsByUser(user, params = {}){
     let query = supabase.from('friend').select('*')
     if (params.imon){
         query = query.eq(params.imon, user)

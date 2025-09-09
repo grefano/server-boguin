@@ -28,6 +28,11 @@ async function addWatchTime(id_user, id_video, time){
 
 }
 
+async function getVideoViewsAmount(id_video){
+    const {data, error} = (await supabase.from('watchtime').select('created_at').eq('id_video', id_video))
+    return error ? error : data.length
+}
+
 module.exports = {
-    addWatchTime, getWatchTime, getWatchedVideos
+    addWatchTime, getWatchTime, getWatchedVideos, getVideoViewsAmount
 }
